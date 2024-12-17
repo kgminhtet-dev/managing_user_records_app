@@ -1,0 +1,9 @@
+development:
+  database:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 12345678
+    dbname: mur_user
+    sslmode: disable
+    timezone: Asia/Yangon

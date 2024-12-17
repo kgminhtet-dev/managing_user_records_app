@@ -22,7 +22,7 @@ run:
 
 test:
 	@echo "Running tests..."
-	$(GOTEST) ./...
+	$(GOTEST) -v ./...
 
 lint:
 	@echo "Linting the code..."
