@@ -22,7 +22,7 @@ go.work
 go.work.sum
 
 # env file
-.env
+development.env
 ### Node template
 # Logs
 logs
@@ -99,7 +99,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+development.env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -180,7 +180,7 @@ go.work
 go.work.sum
 
 # env file
-.env
+development.env
 
 ### NextJS template
 # dependencies
