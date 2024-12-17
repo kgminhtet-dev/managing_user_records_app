@@ -12,7 +12,7 @@ func TestNewDatabase(t *testing.T) {
 		t.Fatal("Expected error to be nil, but got", err)
 	}
 
-	db, err := NewDatabase(&cfg.Database)
+	db, err := newDatabase(&cfg.Database)
 	if err != nil {
 		t.Error("Expected error to be nil, but got", err)
 	}

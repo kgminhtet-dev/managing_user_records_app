@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewDatabase(cfg *DatabaseConfig) (*gorm.DB, error) {
+func newDatabase(cfg *DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 		cfg.Host, cfg.User, cfg.Password, cfg.DbName, cfg.Port, cfg.SSLMode, cfg.TimeZone)
 
