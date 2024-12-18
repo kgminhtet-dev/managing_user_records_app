@@ -33,8 +33,8 @@ func (r *Repository) GetById(id string) (*User, error) {
 	return &user, nil
 }
 
-func (r *Repository) Update(id string, user *User) (*User, error) {
-	return nil, nil
+func (r *Repository) Update(id string, user *User) error {
+	return r.db.Model(&User{}).Where("id = ?", id).Updates(user).Error
 }
 
 func (r *Repository) Delete(id string) (*User, error) {

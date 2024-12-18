@@ -56,6 +56,20 @@ func TestRepository(t *testing.T) {
 		}
 	})
 
+	t.Run("Update user email", func(t *testing.T) {
+		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
+
+		user := &User{Email: "user22@example.com"}
+		if err := repo.Update(id, user); err != nil {
+			t.Fatalf("Expected error to be nil, but got %v", err)
+		}
+		
+		fetchedUser, _ := repo.GetById(id)
+		if fetchedUser.Email != user.Email {
+			t.Errorf("Expected email %s, but got %s", user.Email, fetchedUser.Email)
+		}
+	})
+
 	t.Run("Find by email", func(t *testing.T) {
 		fetchedUser, err := repo.FindByEmail(user.Email)
 		if err != nil {
