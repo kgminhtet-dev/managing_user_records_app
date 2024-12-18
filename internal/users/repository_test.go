@@ -11,12 +11,12 @@ func TestRepository(t *testing.T) {
 	db := newDatabase(&cfg.Database)
 	repo := newRepository(db)
 	user := &User{
-		Name:     "user13",
-		Email:    "user13@example.com",
+		Name:     "user14",
+		Email:    "user14@example.com",
 		Password: "123456768",
 	}
 	updateUser := &User{
-		Email: "user133@example.com",
+		Email: "user144@example.com",
 	}
 
 	t.Run("Create user", func(t *testing.T) {
