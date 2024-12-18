@@ -37,8 +37,8 @@ func (r *Repository) Update(id string, user *User) error {
 	return r.db.Model(&User{}).Where("id = ?", id).Updates(user).Error
 }
 
-func (r *Repository) Delete(id string) (*User, error) {
-	return nil, nil
+func (r *Repository) Delete(id string) error {
+	return r.db.Where("id = ?", id).Delete(&User{}).Error
 }
 
 func (r *Repository) FindByEmail(email string) (*User, error) {

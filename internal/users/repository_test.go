@@ -63,7 +63,7 @@ func TestRepository(t *testing.T) {
 		if err := repo.Update(id, user); err != nil {
 			t.Fatalf("Expected error to be nil, but got %v", err)
 		}
-		
+
 		fetchedUser, _ := repo.GetById(id)
 		if fetchedUser.Email != user.Email {
 			t.Errorf("Expected email %s, but got %s", user.Email, fetchedUser.Email)
@@ -78,6 +78,18 @@ func TestRepository(t *testing.T) {
 
 		if fetchedUser.Email != user.Email {
 			t.Errorf("Expected email %s, but got %s", user.Email, fetchedUser.Email)
+		}
+	})
+
+	t.Run("Delete user", func(t *testing.T) {
+		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
+
+		if err := repo.Delete(id); err != nil {
+			t.Fatalf("Expected error to be nil, but got %v", err)
+		}
+
+		if user, _ := repo.GetById(id); user != nil {
+			t.Errorf("User must be nil")
 		}
 	})
 }
