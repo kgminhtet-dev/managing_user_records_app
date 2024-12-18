@@ -10,33 +10,38 @@ func TestRepository(t *testing.T) {
 	cfg, _ := LoadConfig()
 	db := newDatabase(&cfg.Database)
 	repo := newRepository(db)
-	user := User{
-		Name:     "user5",
-		Email:    "user5@example.com",
+	user := &User{
+		Name:     "user13",
+		Email:    "user13@example.com",
 		Password: "123456768",
+	}
+	updateUser := &User{
+		Email: "user133@example.com",
 	}
 
 	t.Run("Create user", func(t *testing.T) {
-		err := repo.Create(&user)
+		err := repo.Create(user)
 		if err != nil {
-			t.Errorf("Expected error to be nil, got %v", err)
+			t.Fatalf("Expected error to be nil, got %v", err)
 		}
 
-		var fetchUser User
-		db.First(&fetchUser, "email = ?", user.Email)
+		var fetchedUser User
+		db.First(&fetchedUser, "email = ?", user.Email)
 
-		if fetchUser.ID != user.ID {
-			t.Errorf("Expected user id %v, but got id %v", user, fetchUser)
+		if fetchedUser.ID != user.ID {
+			t.Errorf("Expected user id %s, but got id %s", user.ID, fetchedUser.ID)
 		}
+
+		*user = fetchedUser
 	})
 
 	t.Run("Get all users", func(t *testing.T) {
 		start, end := 1, 5
-		users, err := repo.GetAll(start, end)
 		limit := end - start
 
+		users, err := repo.GetAll(start, end)
 		if err != nil {
-			t.Errorf("Expected error to be nil, but got %v", err)
+			t.Fatalf("Expected error to be nil, but got %v", err)
 		}
 
 		if len(users) != limit {
@@ -45,7 +50,7 @@ func TestRepository(t *testing.T) {
 	})
 
 	t.Run("Get user by id", func(t *testing.T) {
-		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
+		id := user.ID.String()
 		user, err := repo.GetById(id)
 		if err != nil {
 			t.Fatalf("Expected error to be nil, but got %v", err)
@@ -56,21 +61,20 @@ func TestRepository(t *testing.T) {
 		}
 	})
 
-	t.Run("Update user email", func(t *testing.T) {
-		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
-
-		user := &User{Email: "user22@example.com"}
-		if err := repo.Update(id, user); err != nil {
+	t.Run("Update user's email", func(t *testing.T) {
+		if err := repo.Update(user.ID.String(), updateUser); err != nil {
 			t.Fatalf("Expected error to be nil, but got %v", err)
 		}
 
-		fetchedUser, _ := repo.GetById(id)
-		if fetchedUser.Email != user.Email {
+		fetchedUser, _ := repo.GetById(user.ID.String())
+		if fetchedUser.Email != updateUser.Email {
 			t.Errorf("Expected email %s, but got %s", user.Email, fetchedUser.Email)
 		}
+
+		user = fetchedUser
 	})
 
-	t.Run("Find by email", func(t *testing.T) {
+	t.Run("Find user by email", func(t *testing.T) {
 		fetchedUser, err := repo.FindByEmail(user.Email)
 		if err != nil {
 			t.Fatalf("Expected error to be nil, but got %v", err)
@@ -81,15 +85,13 @@ func TestRepository(t *testing.T) {
 		}
 	})
 
-	t.Run("Delete user", func(t *testing.T) {
-		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
-
-		if err := repo.Delete(id); err != nil {
+	t.Run("Soft delete user", func(t *testing.T) {
+		if err := repo.Delete(user.ID.String()); err != nil {
 			t.Fatalf("Expected error to be nil, but got %v", err)
 		}
 
-		if user, _ := repo.GetById(id); user != nil {
-			t.Errorf("User must be nil")
+		if _, err := repo.GetById(user.ID.String()); err == nil {
+			t.Errorf("Expected error to be nil, but got %v", err)
 		}
 	})
 }
