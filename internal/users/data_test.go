@@ -12,11 +12,7 @@ func TestNewDatabase(t *testing.T) {
 		t.Fatal("Expected error to be nil, but got", err)
 	}
 
-	db, err := newDatabase(&cfg.Database)
-	if err != nil {
-		t.Error("Expected error to be nil, but got", err)
-	}
-
+	db := newDatabase(&cfg.Database)
 	if db.Name() != "postgres" {
 		t.Errorf("Expected database name to be %s, but got %s", "postgres", db.Name())
 	}

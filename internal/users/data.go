@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func newDatabase(cfg *DatabaseConfig) (*gorm.DB, error) {
+func newDatabase(cfg *DatabaseConfig) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
 		cfg.Host, cfg.User, cfg.Password, cfg.DbName, cfg.Port, cfg.SSLMode, cfg.TimeZone)
 
@@ -17,5 +17,5 @@ func newDatabase(cfg *DatabaseConfig) (*gorm.DB, error) {
 	}
 
 	db.AutoMigrate(&User{})
-	return db, nil
+	return db
 }
