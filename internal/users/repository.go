@@ -1,6 +1,8 @@
 package users
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository struct {
 	db *gorm.DB
@@ -22,7 +24,13 @@ func (r *Repository) GetAll(start, end int) ([]*User, error) {
 }
 
 func (r *Repository) GetById(id string) (*User, error) {
-	return nil, nil
+	var user User
+	err := r.db.Where("id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (r *Repository) Update(id string, user *User) (*User, error) {

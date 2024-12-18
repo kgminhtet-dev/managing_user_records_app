@@ -43,4 +43,16 @@ func TestRepository(t *testing.T) {
 			t.Errorf("Expected user count %d, but got %d", limit, len(users))
 		}
 	})
+
+	t.Run("Get user by id", func(t *testing.T) {
+		id := "5ea5b063-4076-4e02-8650-7d1da3833bf7"
+		user, err := repo.GetById(id)
+		if err != nil {
+			t.Fatalf("Expected error to be nil, but got %v", err)
+		}
+
+		if user.ID.String() != id {
+			t.Errorf("Expected id %s, but got %s", id, user.ID)
+		}
+	})
 }
