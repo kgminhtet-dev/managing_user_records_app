@@ -25,7 +25,7 @@ func (r *Repository) GetAll(start, end int) ([]*User, error) {
 
 func (r *Repository) GetById(id string) (*User, error) {
 	var user User
-	err := r.db.Where("id = ?", id).First(&user).Error
+	err := r.db.First(&user, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
