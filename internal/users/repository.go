@@ -10,8 +10,15 @@ func (r *Repository) Create(user *User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *Repository) GetAll(start, end int) (*User, error) {
-	return nil, nil
+func (r *Repository) GetAll(start, end int) ([]*User, error) {
+	var users []*User
+
+	err := r.db.Limit(end - start).Offset(start).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (r *Repository) GetById(id string) (*User, error) {
