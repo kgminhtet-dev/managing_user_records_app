@@ -1,6 +1,10 @@
 package users
 
 import (
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecases"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,14 +24,14 @@ func Run(e *echo.Echo) {
 		return c.JSON(http.StatusOK, "Response from user")
 	})
 
-	cfg, err := LoadConfig()
+	cfg, err := config.Load()
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 
-	db := newDatabase(&cfg.Database)
-	repo := newRepository(db)
-	service := newService(repo)
+	db := data.New(cfg.Database)
+	repo := repository.New(db)
+	service := usecases.NewService(repo)
 	handler := newHandler(service)
 	routes(userRoute, handler)
 }

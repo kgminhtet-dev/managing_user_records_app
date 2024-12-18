@@ -1,21 +1,14 @@
-package users
+package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
-type Configs struct {
-	Development Config `yaml:"development"`
-	Production  Config `yaml:"production"`
-}
-
-type Config struct {
-	Database DatabaseConfig
-}
-
 type DatabaseConfig struct {
+	Name     string `yaml:"name"`
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	User     string `yaml:"user"`
@@ -25,7 +18,17 @@ type DatabaseConfig struct {
 	TimeZone string `yaml:"timezone"`
 }
 
-func LoadConfig() (*Config, error) {
+type Config struct {
+	Database *DatabaseConfig
+}
+
+type Configs struct {
+	Development Config `yaml:"development"`
+	Production  Config `yaml:"production"`
+	Testing     Config `yaml:"testing"`
+}
+
+func Load() (*Config, error) {
 	data, err := os.ReadFile("./config.yaml")
 	if err != nil {
 		return nil, err
@@ -39,6 +42,8 @@ func LoadConfig() (*Config, error) {
 	switch env := os.Getenv("env"); env {
 	case "development":
 		return &configs.Development, nil
+	case "testing":
+		return &configs.Testing, nil
 	default:
 		return nil, fmt.Errorf("invalid environment %q", env)
 	}
