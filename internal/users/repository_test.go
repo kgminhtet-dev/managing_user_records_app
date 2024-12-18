@@ -55,4 +55,15 @@ func TestRepository(t *testing.T) {
 			t.Errorf("Expected id %s, but got %s", id, user.ID)
 		}
 	})
+
+	t.Run("Find by email", func(t *testing.T) {
+		fetchedUser, err := repo.FindByEmail(user.Email)
+		if err != nil {
+			t.Fatalf("Expected error to be nil, but got %v", err)
+		}
+
+		if fetchedUser.Email != user.Email {
+			t.Errorf("Expected email %s, but got %s", user.Email, fetchedUser.Email)
+		}
+	})
 }

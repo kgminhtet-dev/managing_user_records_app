@@ -42,7 +42,12 @@ func (r *Repository) Delete(id string) (*User, error) {
 }
 
 func (r *Repository) FindByEmail(email string) (*User, error) {
-	return nil, nil
+	var user User
+	err := r.db.First(&user, "email = ?", email).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func newRepository(db *gorm.DB) *Repository {
