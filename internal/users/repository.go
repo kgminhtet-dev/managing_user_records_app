@@ -6,8 +6,8 @@ type Repository struct {
 	db *gorm.DB
 }
 
-func (r *Repository) Create(user *User) (*User, error) {
-	return nil, nil
+func (r *Repository) Create(user *User) error {
+	return r.db.Create(user).Error
 }
 
 func (r *Repository) GetAll(start, end int) (*User, error) {

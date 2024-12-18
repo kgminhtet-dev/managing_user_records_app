@@ -18,17 +18,16 @@ func TestRepository(t *testing.T) {
 			Password: "123456768",
 		}
 
-		createdUser, err := repo.Create(user)
+		err := repo.Create(user)
 		if err != nil {
 			t.Errorf("Expected error to be nil, got %v", err)
 		}
 
-		if createdUser == nil {
-			t.Fatalf("Expected user not to be nil")
-		}
+		var fetchUser User
+		db.First(&fetchUser, "email = ?", user.Email)
 
-		if createdUser.Email != user.Email {
-			t.Errorf("Expected new user email %v, but got %v", user.Email, createdUser.Email)
+		if fetchUser.Email != user.Email {
+			t.Errorf("Expected new user email %v, but got %v", user.Email, fetchUser.Email)
 		}
 	})
 }
