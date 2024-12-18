@@ -19,7 +19,6 @@ var (
 
 func (s *Service) CreateUser(user *User) error {
 	if fetchedUser, _ := s.repository.FindByEmail(user.Email); fetchedUser != nil {
-		log.Println("user ", fetchedUser)
 		return ErrEmailAlreadyExist
 	}
 
