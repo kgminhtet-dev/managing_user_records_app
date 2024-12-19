@@ -1,4 +1,4 @@
-package usecases
+package usecase
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/testutils"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/testutil"
 	"os"
 	"testing"
 )
@@ -17,9 +17,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	db := testutils.Setup()
-	users = testutils.GenerateRandomUsers(10)
-	testutils.SeedDatabase(db, users)
+	db := testutil.Setup()
+	users = testutil.GenerateRandomUsers(10)
+	testutil.SeedDatabase(db, users)
 	repo := repository.New(db)
 	service = NewService(repo)
 

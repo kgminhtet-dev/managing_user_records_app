@@ -1,12 +1,12 @@
-package users
+package handler
 
 import (
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecases"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
 )
 
 type Handler struct {
-	service *usecases.Service
+	service *usecase.Service
 }
 
 func (h *Handler) GetUsers(c echo.Context) error {
@@ -29,6 +29,6 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 	return nil
 }
 
-func newHandler(service *usecases.Service) *Handler {
+func New(service *usecase.Service) *Handler {
 	return &Handler{service: service}
 }
