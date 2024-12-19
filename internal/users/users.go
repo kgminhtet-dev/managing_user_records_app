@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/handler"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
@@ -18,7 +18,7 @@ func routes(router *echo.Group, handlers *handler.Handler) {
 }
 
 func Run(e *echo.Echo) {
-	cfg, err := config.Load()
+	cfg, err := config.Load("")
 	if err != nil {
 		e.Logger.Fatal(err)
 	}

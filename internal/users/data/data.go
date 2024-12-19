@@ -2,7 +2,7 @@ package data
 
 import (
 	"fmt"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
 	"log"
 
 	"gorm.io/driver/postgres"

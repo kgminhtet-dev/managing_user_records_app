@@ -3,7 +3,7 @@ package testutil
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"gorm.io/gorm"
 	"log"
@@ -11,13 +11,13 @@ import (
 )
 
 func setupEnvironment() {
-	if err := os.Setenv("env", "testing"); err != nil {
+	if err := os.Setenv("ENV", "testing"); err != nil {
 		log.Fatal("Error setting environment variables:", err)
 	}
 }
 
 func loadConfiguration() *config.Config {
-	cfg, err := config.Load()
+	cfg, err := config.Load("../config.yaml")
 	if err != nil {
 		log.Fatal("Error loading configuration:", err)
 	}
@@ -25,7 +25,6 @@ func loadConfiguration() *config.Config {
 }
 
 func setupDatabase(cfg *config.Config) *gorm.DB {
-	log.Println("config", cfg)
 	db := data.New(cfg.Database)
 	return db
 }
