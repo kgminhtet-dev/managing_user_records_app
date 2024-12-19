@@ -82,6 +82,119 @@ func TestService_CreateUser(t *testing.T) {
 	}
 }
 
+func TestService_GetUserById(t *testing.T) {
+	user := users[0]
+	testcases := []struct {
+		name         string
+		id           string
+		expectedErr  error
+		expectedUser *data.User
+	}{
+		{
+			name:         "Find user by existing id",
+			id:           user.ID,
+			expectedErr:  nil,
+			expectedUser: user,
+		},
+		{
+			name:         "Find user by new id",
+			id:           uuid.New().String(),
+			expectedErr:  ErrUserNotFound,
+			expectedUser: nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotUser, err := service.GetUserById(tc.id)
+
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("Expected error %v, but got %v", tc.expectedErr, err)
+			}
+
+			if gotUser != nil && gotUser.ID != tc.expectedUser.ID {
+				t.Errorf("Expected user %+v, but got %+v", tc.expectedUser, gotUser)
+			}
+		})
+	}
+}
+
+func TestService_GetUsers(t *testing.T) {
+	page, limit := 1, 10
+	users, err := service.GetUsers(page, limit)
+
+	if err != nil {
+		t.Errorf("Expected error to be nil, but got %v", err)
+	}
+
+	if len(users) != limit {
+		t.Errorf("Expected limit %d, but got %d", limit, len(users))
+	}
+}
+
+func TestService_UpdateUser(t *testing.T) {
+	oldUser := users[0]
+	updateUserInfo := &data.User{Email: fmt.Sprintf("updated%s", oldUser.Email)}
+
+	testcases := []struct {
+		name           string
+		id             string
+		updateUserInfo *data.User
+		expectedErr    error
+	}{
+		{
+			name:           "Updating the old user",
+			id:             oldUser.ID,
+			updateUserInfo: updateUserInfo,
+			expectedErr:    nil,
+		},
+		{
+			name:           "Updating the not existed user",
+			id:             uuid.New().String(),
+			updateUserInfo: updateUserInfo,
+			expectedErr:    ErrUserNotFound,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := service.UpdateUser(tc.id, tc.updateUserInfo)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("Expcted error %v, but got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
+func TestService_DeleteUser(t *testing.T) {
+	user := users[0]
+	testcases := []struct {
+		name        string
+		id          string
+		expectedErr error
+	}{
+		{
+			name:        "Deleting the existing user",
+			id:          user.ID,
+			expectedErr: nil,
+		},
+		{
+			name:        "Deleting the deleted user",
+			id:          user.ID,
+			expectedErr: ErrUserNotFound,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := service.DeleteUser(tc.id)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("Expected error %v but got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}
+
 func generateRandomUsers(size int) []*data.User {
 	users := make([]*data.User, size, size)
 
