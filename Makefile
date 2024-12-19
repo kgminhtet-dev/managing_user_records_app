@@ -8,9 +8,9 @@ GOTEST := go test
 GOLINT := golangci-lint
 
 # Targets
-.PHONY: all fmt test lint build run clean
+.PHONY: all fmt lint test build run clean
 
-all: fmt lint build run clean
+all: fmt build run clean
 
 build:
 	@echo "Building the application..."

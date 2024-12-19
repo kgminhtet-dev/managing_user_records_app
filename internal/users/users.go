@@ -7,7 +7,6 @@ import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 func routes(router *echo.Group, handlers *handler.Handler) {
@@ -30,8 +29,5 @@ func Run(e *echo.Echo) {
 	h := handler.New(service)
 
 	userRoute := e.Group("api/v1")
-	userRoute.GET("users", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "Response from user")
-	})
 	routes(userRoute, h)
 }
