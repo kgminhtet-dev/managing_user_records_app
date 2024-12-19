@@ -62,7 +62,7 @@ func TestService_CreateUser(t *testing.T) {
 				t.Errorf("Expected error %v, but got %v", ErrEmailAlreadyExist, err)
 			}
 
-			fetcheduser, err := service.GetUserById(tc.user.ID)
+			fetcheduser, _ := service.GetUserById(tc.user.ID)
 			if fetcheduser == nil {
 				t.Fatalf("Expected created user %v but got %v", tc.user, fetcheduser)
 			}

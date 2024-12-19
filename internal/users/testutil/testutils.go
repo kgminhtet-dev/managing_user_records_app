@@ -42,7 +42,7 @@ func Setup() *gorm.DB {
 }
 
 func GenerateRandomUsers(size int) []*data.User {
-	users := make([]*data.User, size, size)
+	users := make([]*data.User, size)
 
 	for i, _ := range users {
 		user := data.User{}

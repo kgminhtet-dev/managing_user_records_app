@@ -6,9 +6,8 @@ import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/handler"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
-	"net/http"
-
 	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 func routes(router *echo.Group, handlers *handler.Handler) {
@@ -20,11 +19,6 @@ func routes(router *echo.Group, handlers *handler.Handler) {
 }
 
 func Run(e *echo.Echo) {
-	userRoute := e.Group("/api/v1")
-	userRoute.GET("/users", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "Response from user")
-	})
-
 	cfg, err := config.Load()
 	if err != nil {
 		e.Logger.Fatal(err)
@@ -33,6 +27,11 @@ func Run(e *echo.Echo) {
 	db := data.New(cfg.Database)
 	repo := repository.New(db)
 	service := usecase.NewService(repo)
-	handler := handler.New(service)
-	routes(userRoute, handler)
+	h := handler.New(service)
+
+	userRoute := e.Group("api/v1")
+	userRoute.GET("users", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "Response from user")
+	})
+	routes(userRoute, h)
 }

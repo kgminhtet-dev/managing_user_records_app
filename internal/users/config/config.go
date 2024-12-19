@@ -51,7 +51,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	switch env := os.Getenv("env"); env {
+	switch env := os.Getenv("ENV"); env {
 	case "development":
 		return &configs.Development, nil
 	case "testing":

@@ -34,7 +34,7 @@ func TestLoadConfig(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			if err := os.Setenv("env", tc.env); err != nil {
+			if err := os.Setenv("ENV", tc.env); err != nil {
 				t.Fatal("Setting environment variable error")
 			}
 
