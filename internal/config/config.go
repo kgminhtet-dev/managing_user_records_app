@@ -1,7 +1,9 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -29,23 +31,16 @@ type Configs struct {
 	Testing     Config `yaml:"testing"`
 }
 
-func readConfigFile(path string) []byte {
-	if path == "" {
-		path = "./config.yaml"
-	}
-	configs, err := os.ReadFile(path)
+func Load(r io.Reader) (*Config, error) {
+	reader := bufio.NewReader(r)
+	data := make([]byte, 1<<10)
+	n, err := reader.Read(data)
 	if err != nil {
-		log.Fatal("Can't find config.yaml file")
+		log.Fatalf("Can't read reader: %v", err)
 	}
 
-	return configs
-}
-
-func Load(path string) (*Config, error) {
-	data := readConfigFile(path)
 	var configs Configs
-
-	if err := yaml.Unmarshal(data, &configs); err != nil {
+	if err := yaml.Unmarshal(data[:n], &configs); err != nil {
 		return nil, err
 	}
 

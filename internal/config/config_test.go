@@ -2,8 +2,26 @@ package config
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
+
+const testConfig = `
+development:
+  database:
+    name: postgres
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 12345678
+    dbname: mur_user
+    sslmode: disable
+    timezone: Asia/Yangon
+
+testing:
+  database:
+    name: sqlite
+`
 
 func TestLoadConfig(t *testing.T) {
 	testcases := []struct {
@@ -38,7 +56,7 @@ func TestLoadConfig(t *testing.T) {
 				t.Fatal("Setting environment variable error")
 			}
 
-			resultConfig, err := Load("")
+			resultConfig, err := Load(strings.NewReader(testConfig))
 			if err != nil {
 				t.Fatalf("Load config error: %v", err)
 			}

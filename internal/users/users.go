@@ -7,6 +7,7 @@ import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
+	"os"
 )
 
 func routes(router *echo.Group, handlers *handler.Handler) {
@@ -18,7 +19,12 @@ func routes(router *echo.Group, handlers *handler.Handler) {
 }
 
 func Run(e *echo.Echo) {
-	cfg, err := config.Load("")
+	file, err := os.Open(os.Getenv("USER_CONFIG_PATH"))
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	cfg, err := config.Load(file)
 	if err != nil {
 		e.Logger.Fatal(err)
 	}

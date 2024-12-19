@@ -3,8 +3,26 @@ package data
 import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
 	"os"
+	"strings"
 	"testing"
 )
+
+const testConfig = `
+development:
+  database:
+    name: postgres
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 12345678
+    dbname: mur_user
+    sslmode: disable
+    timezone: Asia/Yangon
+
+testing:
+  database:
+    name: sqlite
+`
 
 func TestNewDatabase(t *testing.T) {
 	testcases := []struct {
@@ -21,7 +39,7 @@ func TestNewDatabase(t *testing.T) {
 				t.Fatal("Setting environment variable error")
 			}
 
-			cfg, err := config.Load("../config.yaml")
+			cfg, err := config.Load(strings.NewReader(testConfig))
 			if err != nil {
 				t.Fatal("Error loading configuration", err)
 			}
