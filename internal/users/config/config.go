@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -28,13 +29,24 @@ type Configs struct {
 	Testing     Config `yaml:"testing"`
 }
 
-func Load() (*Config, error) {
-	data, err := os.ReadFile("./config.yaml")
-	if err != nil {
-		return nil, err
+func readConfigFile() []byte {
+	configs, err := os.ReadFile("./config.yaml")
+	if err == nil {
+		return configs
 	}
 
+	configs, err = os.ReadFile("../config.yaml")
+	if err != nil {
+		log.Fatal("Can't find config.yaml file")
+	}
+
+	return configs
+}
+
+func Load() (*Config, error) {
+	data := readConfigFile()
 	var configs Configs
+
 	if err := yaml.Unmarshal(data, &configs); err != nil {
 		return nil, err
 	}

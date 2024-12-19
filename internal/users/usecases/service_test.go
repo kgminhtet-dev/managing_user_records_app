@@ -4,32 +4,24 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
-	"log"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/testutils"
 	"os"
 	"testing"
 )
 
-var service *Service
-var users []*data.User
+var (
+	service *Service
+	users   []*data.User
+)
 
 func TestMain(m *testing.M) {
-	if err := os.Setenv("env", "testing"); err != nil {
-		log.Fatal("Error setting environment variables")
-	}
-
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal("Error loading configuration")
-	}
-
-	db := data.New(cfg.Database)
+	db := testutils.Setup()
+	users = testutils.GenerateRandomUsers(10)
+	testutils.SeedDatabase(db, users)
 	repo := repository.New(db)
 	service = NewService(repo)
-	users = generateRandomUsers(10)
-	db.CreateInBatches(users, len(users))
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -193,18 +185,4 @@ func TestService_DeleteUser(t *testing.T) {
 			}
 		})
 	}
-}
-
-func generateRandomUsers(size int) []*data.User {
-	users := make([]*data.User, size, size)
-
-	for i, _ := range users {
-		user := data.User{}
-		user.ID = uuid.New().String()
-		user.Name = fmt.Sprintf("user%d", i+1)
-		user.Email = fmt.Sprintf("user%d@example.com", i+1)
-		users[i] = &user
-	}
-
-	return users
 }

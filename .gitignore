@@ -145,7 +145,7 @@ dist
 # TernJS port file
 .tern-port
 
-# Stores VSCode versions used for testing VSCode extensions
+# Stores VSCode versions used for testutils VSCode extensions
 .vscode-test
 
 # yarn v2
@@ -188,7 +188,7 @@ go.work.sum
 /.pnp
 .pnp.js
 
-# testing
+# testutils
 /coverage
 
 # next.js

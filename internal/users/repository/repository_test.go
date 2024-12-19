@@ -4,36 +4,23 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/testutils"
 	"github.com/mattn/go-sqlite3"
-	"gorm.io/gorm"
-	"log"
 	"os"
 	"testing"
 )
 
-var repo *Repository
-var db *gorm.DB
-var users []*data.User
+var (
+	repo  *Repository
+	users []*data.User
+)
 
 func TestMain(m *testing.M) {
-	if err := os.Setenv("env", "testing"); err != nil {
-		log.Fatal("Error setting environment variables")
-	}
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal("Error loading configuration")
-	}
-	db = data.New(cfg.Database)
+	db := testutils.Setup()
+	users = testutils.GenerateRandomUsers(10)
+	testutils.SeedDatabase(db, users)
 	repo = New(db)
-	users = randomGenerateUser(10)
-
-	for _, user := range users {
-		if err := repo.Create(user); err != nil {
-			log.Fatal("Error creating user")
-		}
-	}
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -129,18 +116,4 @@ func TestDeleteUser(t *testing.T) {
 	if fetchedUser, _ := repo.GetById(user.ID); fetchedUser != nil {
 		t.Errorf("Expected user to be nil, but got %v", fetchedUser)
 	}
-}
-
-func randomGenerateUser(size int) []*data.User {
-	users := make([]*data.User, size, size)
-
-	for i, _ := range users {
-		user := data.User{}
-		user.ID = uuid.New().String()
-		user.Name = fmt.Sprintf("user%d", i+1)
-		user.Email = fmt.Sprintf("user%d@example.com", i+1)
-		users[i] = &user
-	}
-
-	return users
 }
