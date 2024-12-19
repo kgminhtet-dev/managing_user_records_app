@@ -7,6 +7,7 @@ import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
+	"log"
 	"os"
 )
 
@@ -18,22 +19,25 @@ func routes(router *echo.Group, handlers *handler.Handler) {
 	router.DELETE("/users/:id", handlers.DeleteUser)
 }
 
-func Run(e *echo.Echo) {
+func readConfig() *config.Config {
 	file, err := os.Open(os.Getenv("USER_CONFIG_PATH"))
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	cfg, err := config.Load(file)
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 
+	return cfg
+}
+
+func Run(e *echo.Echo) {
+	cfg := readConfig()
 	db := data.New(cfg.Database)
 	repo := repository.New(db)
 	service := usecase.NewService(repo)
 	h := handler.New(service)
-
-	userRoute := e.Group("api/v1")
-	routes(userRoute, h)
+	routes(e.Group("api/v1"), h)
 }
