@@ -1,0 +1,9 @@
+development:
+    database:
+      url: mongodb://localhost:27017
+      name: mur_records
+
+testing:
+  database:
+    url: mongodb://localhost:27017
+    name: test
