@@ -30,8 +30,7 @@ func GenerateRandomRecords(size int) []any {
 		record.UserID = uuid.New().String()
 		record.Event = events[i%len(events)]
 		record.Data = nil
-		record.CreatedAt = time.Now()
-		record.UpdatedAt = time.Now()
+		record.Timestamp = time.Now()
 		records[i] = record
 	}
 

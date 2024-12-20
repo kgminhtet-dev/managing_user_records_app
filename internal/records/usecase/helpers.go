@@ -10,7 +10,6 @@ func NewRecord(event string, payload *Payload) *data.UserRecord {
 		UserID:    payload.UserID,
 		Event:     event,
 		Data:      payload.Data,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Timestamp: time.Now(),
 	}
 }

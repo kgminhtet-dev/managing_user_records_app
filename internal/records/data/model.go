@@ -1,9 +1,8 @@
 package data
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type UserRecord struct {
@@ -11,6 +10,5 @@ type UserRecord struct {
 	UserID    string             `json:"user_id" bson:"user_id"`
 	Event     string             `json:"event" bson:"event"`
 	Data      any                `json:"data" bson:"data"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time          `json:"update_at" bson:"updated_at"`
+	Timestamp time.Time          `json:"timestamp" bson:"timestamp"`
 }
