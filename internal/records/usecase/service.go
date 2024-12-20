@@ -42,13 +42,12 @@ func (s *Service) CreateRecord(ctx context.Context, msg *Message) error {
 }
 
 func (s *Service) GetRecords(ctx context.Context, page int) ([]*data.UserRecord, error) {
-	limit := 10
-	start := (page - 1) * limit
-
-	if start <= 0 {
-		start = 1
+	if page <= 0 {
+		page = 1
 	}
 
+	limit := 10
+	start := (page - 1) * limit
 	records, err := s.repository.GetAll(ctx, start, limit)
 	if err != nil {
 		return nil, ErrDatabaseError
