@@ -19,7 +19,7 @@ func ConnectDatabase(ctx context.Context, cfg *config.Config) *mongo.Database {
 	database := client.Database(cfg.Database.Name)
 
 	var result bson.M
-	if err := database.RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+	if err := database.RunCommand(ctx, bson.D{{"ping", 1}}).Decode(&result); err != nil {
 		panic(err)
 	}
 
