@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/data"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,7 +23,7 @@ func (r *Repository) Create(ctx context.Context, record *data.UserRecord) error 
 	return nil
 }
 
-func (r *Repository) GetById(ctx context.Context, id string) (*data.UserRecord, error) {
+func (r *Repository) GetById(ctx context.Context, id primitive.ObjectID) (*data.UserRecord, error) {
 	var record data.UserRecord
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&record)
 	if err != nil {

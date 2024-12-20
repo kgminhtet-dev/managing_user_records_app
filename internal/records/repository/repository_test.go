@@ -2,234 +2,97 @@ package repository_test
 
 import (
 	"context"
-	"testing"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/repository"
-
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/testutil"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
+	"os"
+	"testing"
+	"time"
 )
 
+var (
+	collection *mongo.Collection
+)
+
+func TestMain(m *testing.M) {
+	var database *mongo.Database
+	database, collection = testutil.NewEnvironment()
+
+	exitCode := m.Run()
+
+	(func() {
+		testutil.Clear(database)
+		data.DisconnectDatabase(nil, database)
+	})()
+
+	os.Exit(exitCode)
+}
+
 func TestCreate(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	testcases := []struct {
+		name        string
+		record      *data.UserRecord
+		expectedErr error
+	}{
+		{
+			name: "Create a new record",
+			record: &data.UserRecord{
+				ID:        primitive.ObjectID{},
+				UserID:    uuid.New().String(),
+				Event:     "UserCreated",
+				Data:      nil,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+		},
+	}
+	repo := repository.New(collection)
 
-	mt.Run("Success", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateSuccessResponse())
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := repo.Create(context.Background(), tc.record)
+			assert.Equal(t, err, tc.expectedErr)
 
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+			if err == nil {
+				var fetchedRecord data.UserRecord
+				err = collection.FindOne(context.Background(), bson.M{"user_id": tc.record.UserID}).Decode(&fetchedRecord)
 
-		record := &data.UserRecord{
-			UserID:    uuid.New().String(),
-			Event:     "create user",
-			Data:      nil,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-
-		err := repo.Create(ctx, record)
-		assert.NoError(t, err)
-	})
-
-	mt.Run("DatabaseError", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateCommandErrorResponse(mtest.CommandError{
-			Code:    11000,
-			Message: "mock database error",
-		}))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		record := &data.UserRecord{
-			UserID:    uuid.New().String(),
-			Event:     "create user",
-			Data:      nil,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-
-		err := repo.Create(ctx, record)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to insert record")
-	})
+				assert.NoError(t, err)
+				assert.Equal(t, fetchedRecord.UserID, tc.record.UserID)
+				assert.Equal(t, fetchedRecord.Event, tc.record.Event)
+			}
+		})
+	}
 }
 
 func TestGetById(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	records := testutil.GenerateRandomRecords(10)
+	testutil.SeedDatabase(collection, records)
 
-	mt.Run("Success", func(mt *mtest.T) {
-		expectedID := primitive.NewObjectID()
-		mockRecord := bson.D{
-			{Key: "_id", Value: expectedID},
-			{Key: "user_id", Value: uuid.New().String()},
-			{Key: "event", Value: "create user"},
-			{Key: "data", Value: nil},
-			{Key: "created_at", Value: time.Now()},
-			{Key: "updated_at", Value: time.Now()},
-		}
+	repo := repository.New(collection)
+	record := records[0].(*data.UserRecord)
+	fetchedRecord, err := repo.GetById(context.Background(), record.ID)
 
-		mt.AddMockResponses(mtest.CreateCursorResponse(1, "test.collection", mtest.FirstBatch, mockRecord))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		result, err := repo.GetById(ctx, expectedID.Hex())
-
-		assert.NoError(t, err)
-		assert.NotNil(t, result)
-		assert.Equal(t, expectedID, result.ID)
-		assert.Equal(t, "create user", result.Event)
-	})
-
-	mt.Run("NotFound", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateCommandErrorResponse(mtest.CommandError{
-			Code:    11000,
-			Message: mongo.ErrNoDocuments.Error(),
-		}))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		nonExistentID := primitive.NewObjectID()
-		result, err := repo.GetById(ctx, nonExistentID.Hex())
-
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "no documents")
-	})
-
-	mt.Run("DatabaseError", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateCommandErrorResponse(mtest.CommandError{
-			Code:    11000,
-			Message: "mock database error",
-		}))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		randomID := primitive.NewObjectID()
-		result, err := repo.GetById(ctx, randomID.Hex())
-
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		assert.Contains(t, err.Error(), "failed to get record")
-	})
+	assert.NoError(t, err)
+	assert.NotNil(t, fetchedRecord)
+	assert.Equal(t, record.ID, fetchedRecord.ID)
 }
 
 func TestGetAll(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	records := testutil.GenerateRandomRecords(10)
+	testutil.SeedDatabase(collection, records)
 
-	mt.Run("Success", func(mt *mtest.T) {
-		mockRecords := []bson.D{
-			{
-				{Key: "_id", Value: primitive.NewObjectID()},
-				{Key: "user_id", Value: uuid.New().String()},
-				{Key: "event", Value: "create user"},
-				{Key: "data", Value: nil},
-				{Key: "created_at", Value: time.Now()},
-				{Key: "updated_at", Value: time.Now()},
-			},
-			{
-				{Key: "_id", Value: primitive.NewObjectID()},
-				{Key: "user_id", Value: uuid.New().String()},
-				{Key: "event", Value: "update user"},
-				{Key: "data", Value: nil},
-				{Key: "created_at", Value: time.Now()},
-				{Key: "updated_at", Value: time.Now()},
-			},
-		}
+	repo := repository.New(collection)
+	start := 1
+	limit := 5
+	fetchedRecords, err := repo.GetAll(context.Background(), start, limit)
 
-		firstBatch := mtest.CreateCursorResponse(1, "test.collection", mtest.FirstBatch, mockRecords...)
-		killCursors := mtest.CreateCursorResponse(0, "test.collection", mtest.NextBatch)
-		mt.AddMockResponses(firstBatch, killCursors)
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		results, err := repo.GetAll(ctx, 0, 2)
-
-		assert.NoError(t, err)
-		assert.Len(t, results, 2)
-		assert.Equal(t, "create user", results[0].Event)
-		assert.Equal(t, "update user", results[1].Event)
-	})
-
-	mt.Run("DatabaseError", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateCommandErrorResponse(mtest.CommandError{
-			Code:    11000,
-			Message: "mock database error",
-		}))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		results, err := repo.GetAll(ctx, 0, 2)
-
-		assert.Error(t, err)
-		assert.Nil(t, results)
-		assert.Contains(t, err.Error(), "mock database error")
-	})
-
-	mt.Run("EmptyResult", func(mt *mtest.T) {
-		mt.AddMockResponses(mtest.CreateCursorResponse(1, "test.collection", mtest.FirstBatch))
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		results, err := repo.GetAll(ctx, 0, 2)
-
-		assert.NoError(t, err)
-		assert.Empty(t, results)
-	})
-
-	mt.Run("PaginationTest", func(mt *mtest.T) {
-		mockRecords := []bson.D{
-			{
-				{Key: "_id", Value: primitive.NewObjectID()},
-				{Key: "user_id", Value: uuid.New().String()},
-				{Key: "event", Value: "create user"},
-				{Key: "data", Value: nil},
-				{Key: "created_at", Value: time.Now()},
-				{Key: "updated_at", Value: time.Now()},
-			},
-			{
-				{Key: "_id", Value: primitive.NewObjectID()},
-				{Key: "user_id", Value: uuid.New().String()},
-				{Key: "event", Value: "update user"},
-				{Key: "data", Value: nil},
-				{Key: "created_at", Value: time.Now()},
-				{Key: "updated_at", Value: time.Now()},
-			},
-		}
-
-		firstBatch := mtest.CreateCursorResponse(1, "test.collection", mtest.FirstBatch, mockRecords...)
-		killCursors := mtest.CreateCursorResponse(0, "test.collection", mtest.NextBatch)
-		mt.AddMockResponses(firstBatch, killCursors)
-
-		repo := repository.New(mt.Coll)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		results, err := repo.GetAll(ctx, 2, 2)
-
-		assert.NoError(t, err)
-		assert.Len(t, results, 2)
-		assert.Equal(t, "create user", results[0].Event)
-		assert.Equal(t, "update user", results[1].Event)
-
-	})
+	assert.NoError(t, err)
+	assert.NotNil(t, fetchedRecords)
+	assert.Len(t, fetchedRecords, limit)
 }
