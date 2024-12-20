@@ -1,9 +1,11 @@
 development:
     database:
       url: mongodb://localhost:27017
-      name: mur_records
+      name: mur
+      collection: records
 
 testing:
   database:
     url: mongodb://localhost:27017
     name: test
+    collection: records

@@ -8,8 +8,9 @@ import (
 )
 
 type Database struct {
-	Url  string
-	Name string
+	Url        string
+	Name       string
+	Collection string
 }
 
 type Config struct {
@@ -30,9 +31,11 @@ func LoadConfig(path string) *Config {
 	var config Config
 	url := viper.GetString(fmt.Sprintf("%s.database.url", env))
 	name := viper.GetString(fmt.Sprintf("%s.database.name", env))
+	collection := viper.GetString(fmt.Sprintf("%s.database.collection", env))
 
 	config.Database.Url = url
 	config.Database.Name = name
+	config.Database.Collection = collection
 
 	return &config
 }

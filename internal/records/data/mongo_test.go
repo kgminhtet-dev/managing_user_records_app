@@ -11,7 +11,7 @@ func TestNewMongo(t *testing.T) {
 	if client == nil {
 		t.Errorf("Mongo client not to be nil")
 	}
-	
+
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			t.Errorf("Error disconnecting from MongoDB: %v", err)

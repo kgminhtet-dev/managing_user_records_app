@@ -11,7 +11,7 @@ type Handler struct {
 	service *usecase.Service
 }
 
-func SetupRoutes(router *echo.Group, handlers *Handler) {
+func RegisterRoutes(router *echo.Group, handlers *Handler) {
 	router.GET("/records", handlers.GetRecords)
 }
 
