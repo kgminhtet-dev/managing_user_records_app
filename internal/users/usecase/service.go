@@ -40,13 +40,16 @@ func (s *Service) CreateUser(user *data.User) error {
 
 func (s *Service) GetUsers(page, limit int) ([]*data.User, error) {
 	start := (page - 1) * limit
+	if start <= 0 {
+		start = 1
+	}
 	end := start + limit
 
 	users, err := s.repository.GetAll(start, end)
 	if err != nil {
 		return nil, ErrInternal
 	}
-
+	
 	return users, nil
 }
 
