@@ -46,8 +46,7 @@ func TestCreate(t *testing.T) {
 				UserID:    uuid.New().String(),
 				Event:     "UserCreated",
 				Data:      nil,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
+				Timestamp: time.Now(),
 			},
 		},
 	}

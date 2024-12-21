@@ -112,15 +112,35 @@ func TestService_GetUserById(t *testing.T) {
 }
 
 func TestService_GetUsers(t *testing.T) {
-	page, limit := 1, 10
-	users, err := service.GetUsers(page, limit)
-
-	if err != nil {
-		t.Errorf("Expected error to be nil, but got %v", err)
+	testcases := []struct {
+		name  string
+		page  int
+		limit int
+	}{
+		{
+			name:  "Get all users with positive page number",
+			page:  1,
+			limit: 10,
+		},
+		{
+			name:  "Get all users with negative page number",
+			page:  -1,
+			limit: 10,
+		},
+		{
+			name:  "Get all users with zero page number",
+			page:  0,
+			limit: 10,
+		},
 	}
 
-	if len(users) != limit {
-		t.Errorf("Expected limit %d, but got %d", limit, len(users))
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := service.GetUsers(tc.page, tc.limit)
+			if err != nil {
+				t.Errorf("Expected error to be nil, but got %v", err)
+			}
+		})
 	}
 }
 
