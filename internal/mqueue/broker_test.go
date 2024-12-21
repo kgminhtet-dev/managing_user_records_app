@@ -42,6 +42,5 @@ func TestDeliveredMessage(t *testing.T) {
 
 	wg.Wait()
 
-	t.Log("Data ", testEnv.writer.String())
 	assert.Contains(t, testEnv.writer.String(), "User data")
 }
