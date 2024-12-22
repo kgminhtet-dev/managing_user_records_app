@@ -78,6 +78,18 @@ func TestGetUserById(t *testing.T) {
 	}
 }
 
+func TestFindUserByEmail(t *testing.T) {
+	user := users[0]
+	fetchedUser, err := repo.FindByEmail(user.Email)
+	if err != nil {
+		t.Fatalf("Expected error to be nil.")
+	}
+
+	if fetchedUser.Email != user.Email {
+		t.Errorf("Expected user id %s, but got %s", user.Email, fetchedUser.Email)
+	}
+}
+
 func TestGetUsers(t *testing.T) {
 	start, end := 1, 10
 	fetchedusers, err := repo.GetAll(start, end)

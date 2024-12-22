@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/auth"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users"
@@ -26,6 +27,7 @@ func main() {
 
 	users.Run(mq, e)
 	records.Run(mq, e)
+	auth.Run(e)
 
 	wg.Add(1)
 	go func() {

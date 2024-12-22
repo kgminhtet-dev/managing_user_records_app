@@ -12,6 +12,10 @@ import (
 	"os"
 )
 
+var (
+	service *usecase.Service
+)
+
 func routes(router *echo.Group, handlers *handler.Handler) {
 	router.GET("/users", handlers.GetUsers)
 	router.GET("/users/:id", handlers.GetUser)
@@ -34,11 +38,19 @@ func readConfig() *config.Config {
 	return cfg
 }
 
-func Run(q *mqueue.Mqueue, e *echo.Echo) {
+func NewService() *usecase.Service {
+	if service != nil {
+		return service
+	}
+
 	cfg := readConfig()
 	db := data.New(cfg.Database)
 	repo := repository.New(db)
-	service := usecase.NewService(repo)
-	h := handler.New(q, service)
+	service = usecase.NewService(repo)
+	return service
+}
+
+func Run(q *mqueue.Mqueue, e *echo.Echo) {
+	h := handler.New(q, NewService())
 	routes(e.Group("api/v1"), h)
 }

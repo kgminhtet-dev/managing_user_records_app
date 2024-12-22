@@ -22,7 +22,7 @@ func TestIsUUID(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		result := isUUID(tc.input)
+		result := IsUUID(tc.input)
 		if result != tc.expected {
 			t.Errorf("Expected %v, but got %v", tc.expected, result)
 		}
@@ -49,7 +49,7 @@ func TestIsEmail(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		result := isEmail(tc.input)
+		result := IsEmail(tc.input)
 		if result != tc.expected {
 			t.Errorf("Expected %v, but got %v", tc.expected, result)
 		}

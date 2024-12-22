@@ -93,6 +93,18 @@ func (s *Service) DeleteUser(id string) error {
 	return nil
 }
 
+func (s *Service) FindByEmail(email string) (*data.User, error) {
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, ErrInternal
+	}
+
+	return user, nil
+}
+
 func NewService(repo *repository.Repository) *Service {
 	return &Service{repository: repo}
 }

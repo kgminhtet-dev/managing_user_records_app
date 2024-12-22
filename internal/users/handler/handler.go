@@ -30,13 +30,13 @@ func (h *Handler) GetUsers(c echo.Context) error {
 	limit := 10
 	users, err := h.service.GetUsers(int(page), limit)
 	if err != nil {
-		return handleUserHandlerError(c, err)
+		return HandleUserHandlerError(c, err)
 	}
 
 	sessionUserId := "1"
 	go h.mq.Publish(
 		event.UsersFetched,
-		newPayload(sessionUserId, map[string]int64{"page": page}),
+		NewPayload(sessionUserId, map[string]int64{"page": page}),
 	)
 
 	return c.JSON(http.StatusOK, map[string]any{
@@ -47,19 +47,19 @@ func (h *Handler) GetUsers(c echo.Context) error {
 
 func (h *Handler) GetUser(c echo.Context) error {
 	id := c.Param("id")
-	if !isUUID(id) {
+	if !IsUUID(id) {
 		return c.JSON(http.StatusBadRequest, BadRequestResponse("Invalid user id"))
 	}
 
 	user, err := h.service.GetUserById(id)
 	if err != nil {
-		return handleUserHandlerError(c, err)
+		return HandleUserHandlerError(c, err)
 	}
 
 	sessionUserId := "1"
 	go h.mq.Publish(
 		event.UserFetched,
-		newPayload(sessionUserId, map[string]string{"id": id}),
+		NewPayload(sessionUserId, map[string]string{"id": id}),
 	)
 
 	return c.JSON(
@@ -85,7 +85,7 @@ func (h *Handler) CreateUser(c echo.Context) error {
 		)
 	}
 
-	if input.Name == "" || !isEmail(input.Email) || !isPassword(input.Password) {
+	if input.Name == "" || !IsEmail(input.Email) || !IsPassword(input.Password) {
 		return c.JSON(
 			http.StatusBadRequest,
 			BadRequestResponse("Invalid user data"))
@@ -98,13 +98,13 @@ func (h *Handler) CreateUser(c echo.Context) error {
 
 	err := h.service.CreateUser(&user)
 	if err != nil {
-		return handleUserHandlerError(c, err)
+		return HandleUserHandlerError(c, err)
 	}
 
 	sessionUserId := "1"
 	go h.mq.Publish(
 		event.UserCreated,
-		newPayload(
+		NewPayload(
 			sessionUserId,
 			map[string]string{
 				"id":    user.ID,
@@ -131,7 +131,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	id := c.Param("id")
 	user.ID = id
 
-	if user.Name == "" || !isUUID(user.ID) || !isEmail(user.Email) {
+	if user.Name == "" || !IsUUID(user.ID) || !IsEmail(user.Email) {
 		return c.JSON(
 			http.StatusBadRequest,
 			BadRequestResponse("Invalid user data"))
@@ -139,13 +139,13 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 	err := h.service.UpdateUser(user.ID, &user)
 	if err != nil {
-		return handleUserHandlerError(c, err)
+		return HandleUserHandlerError(c, err)
 	}
 
 	sessionUserId := "1"
 	go h.mq.Publish(
 		event.UserUpdated,
-		newPayload(
+		NewPayload(
 			sessionUserId,
 			map[string]string{
 				"id":    user.ID,
@@ -160,19 +160,19 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 func (h *Handler) DeleteUser(c echo.Context) error {
 	id := c.Param("id")
 
-	if !isUUID(id) {
+	if !IsUUID(id) {
 		return c.JSON(http.StatusBadRequest, BadRequestResponse("Invalid user id"))
 	}
 
 	err := h.service.DeleteUser(id)
 	if err != nil {
-		return handleUserHandlerError(c, err)
+		return HandleUserHandlerError(c, err)
 	}
 
 	sessionUserId := "1"
 	go h.mq.Publish(
 		event.UserDeleted,
-		newPayload(sessionUserId, map[string]string{"id": id}),
+		NewPayload(sessionUserId, map[string]string{"id": id}),
 	)
 
 	return c.JSON(http.StatusOK, nil)

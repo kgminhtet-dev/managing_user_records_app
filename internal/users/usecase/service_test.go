@@ -20,6 +20,7 @@ func TestMain(m *testing.M) {
 	db := testutil.Setup()
 	users = testutil.GenerateRandomUsers(10)
 	testutil.SeedDatabase(db, users)
+
 	repo := repository.New(db)
 	service = NewService(repo)
 
@@ -106,6 +107,43 @@ func TestService_GetUserById(t *testing.T) {
 
 			if gotUser != nil && gotUser.ID != tc.expectedUser.ID {
 				t.Errorf("Expected user %+v, but got %+v", tc.expectedUser, gotUser)
+			}
+		})
+	}
+}
+
+func TestService_FindByEmail(t *testing.T) {
+	user := users[0]
+	testcases := []struct {
+		name         string
+		email        string
+		expectedErr  error
+		expectedUser *data.User
+	}{
+		{
+			name:         "Find existing user",
+			email:        user.Email,
+			expectedErr:  nil,
+			expectedUser: user,
+		},
+		{
+			name:         "Find absence user",
+			email:        "usernotemail@example.com",
+			expectedErr:  ErrUserNotFound,
+			expectedUser: nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			fetchedUser, err := service.FindByEmail(tc.email)
+
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("Expected error %v, but got %v", tc.expectedErr, err)
+			}
+
+			if tc.expectedUser != nil && fetchedUser.Email != tc.email {
+				t.Errorf("Expected email %s, but got %s", tc.email, fetchedUser.Email)
 			}
 		})
 	}
