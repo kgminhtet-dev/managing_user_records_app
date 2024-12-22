@@ -38,19 +38,19 @@ func (s *Service) CreateUser(user *data.User) error {
 	return nil
 }
 
-func (s *Service) GetUsers(page, limit int) ([]*data.User, error) {
+func (s *Service) GetUsers(page, limit int) (users []*data.User, totalUser int64, err error) {
 	if page <= 0 {
 		page = 1
 	}
 	start := (page - 1) * limit
 	end := start + limit
 
-	users, err := s.repository.GetAll(start, end)
+	users, totalUser, err = s.repository.GetAll(start, end)
 	if err != nil {
-		return nil, ErrInternal
+		return nil, 0, ErrInternal
 	}
 
-	return users, nil
+	return
 }
 
 func (s *Service) GetUserById(id string) (*data.User, error) {

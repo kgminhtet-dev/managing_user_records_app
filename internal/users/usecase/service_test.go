@@ -12,13 +12,14 @@ import (
 )
 
 var (
-	service *Service
-	users   []*data.User
+	service            *Service
+	users              []*data.User
+	totalCountsOfUsers = 20
 )
 
 func TestMain(m *testing.M) {
 	db := testutil.Setup()
-	users = testutil.GenerateRandomUsers(10)
+	users = testutil.GenerateRandomUsers(totalCountsOfUsers)
 	testutil.SeedDatabase(db, users)
 
 	repo := repository.New(db)
@@ -26,53 +27,6 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
-}
-
-func TestService_CreateUser(t *testing.T) {
-	user := &data.User{
-		ID:       uuid.New().String(),
-		Name:     "user 000",
-		Email:    "usertrplezeor@example.com",
-		Password: "12345678",
-	}
-	testcases := []struct {
-		name        string
-		user        *data.User
-		expectedErr error
-	}{
-		{
-			name:        "Creating a new user",
-			user:        user,
-			expectedErr: nil,
-		},
-		{
-			name:        "Creating a new user",
-			user:        user,
-			expectedErr: ErrEmailAlreadyExist,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := service.CreateUser(tc.user)
-			if err == nil {
-				if tc.expectedErr != nil {
-					t.Errorf("Expected error to be nil, but got %v", err)
-				}
-			} else if !errors.Is(err, ErrEmailAlreadyExist) {
-				t.Errorf("Expected error %v, but got %v", ErrEmailAlreadyExist, err)
-			}
-
-			fetcheduser, _ := service.GetUserById(tc.user.ID)
-			if fetcheduser == nil {
-				t.Fatalf("Expected created user %v but got %v", tc.user, fetcheduser)
-			}
-
-			if fetcheduser.ID != tc.user.ID {
-				t.Errorf("Expected user id %s but got %s", tc.user.ID, fetcheduser.ID)
-			}
-		})
-	}
 }
 
 func TestService_GetUserById(t *testing.T) {
@@ -174,9 +128,59 @@ func TestService_GetUsers(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := service.GetUsers(tc.page, tc.limit)
+			_, totalUser, err := service.GetUsers(tc.page, tc.limit)
 			if err != nil {
 				t.Errorf("Expected error to be nil, but got %v", err)
+			}
+			if int(totalUser) != totalCountsOfUsers {
+				t.Errorf("Expected total user %d, but got %d", totalCountsOfUsers, totalUser)
+			}
+		})
+	}
+}
+
+func TestService_CreateUser(t *testing.T) {
+	user := &data.User{
+		ID:       uuid.New().String(),
+		Name:     "user 000",
+		Email:    "usertrplezeor@example.com",
+		Password: "12345678",
+	}
+	testcases := []struct {
+		name        string
+		user        *data.User
+		expectedErr error
+	}{
+		{
+			name:        "Creating a new user",
+			user:        user,
+			expectedErr: nil,
+		},
+		{
+			name:        "Creating a new user",
+			user:        user,
+			expectedErr: ErrEmailAlreadyExist,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := service.CreateUser(tc.user)
+			if err == nil {
+				if tc.expectedErr != nil {
+					t.Errorf("Expected error to be nil, but got %v", err)
+				}
+			} else if !errors.Is(err, ErrEmailAlreadyExist) {
+				t.Errorf("Expected error %v, but got %v", ErrEmailAlreadyExist, err)
+			}
+
+			fetcheduser, _ := service.GetUserById(tc.user.ID)
+			if fetcheduser == nil {
+				t.Fatalf("Expected created user %v but got %v", tc.user, fetcheduser)
+			}
+
+			if fetcheduser.ID != tc.user.ID {
+				t.Errorf("Expected user id %s but got %s", tc.user.ID, fetcheduser.ID)
 			}
 		})
 	}

@@ -12,11 +12,6 @@ import (
 	"strconv"
 )
 
-type UserClaims struct {
-	Email string `json:"email"`
-	jwt.RegisteredClaims
-}
-
 type Handler struct {
 	service *usecase.Service
 	mq      *mqueue.Mqueue
@@ -35,7 +30,7 @@ func (h *Handler) GetUsers(c echo.Context) error {
 	}
 
 	limit := 10
-	users, err := h.service.GetUsers(int(page), limit)
+	users, totalUser, err := h.service.GetUsers(int(page), limit)
 	if err != nil {
 		return handleUserHandlerError(c, err)
 	}
@@ -48,6 +43,7 @@ func (h *Handler) GetUsers(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"data":   users,
+		"total":  totalUser,
 		"paging": map[string]int64{"previous": page, "next": page + 2},
 	})
 }

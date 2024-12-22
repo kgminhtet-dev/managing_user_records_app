@@ -13,15 +13,21 @@ func (r *Repository) Create(user *data.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *Repository) GetAll(start, end int) ([]*data.User, error) {
+func (r *Repository) GetAll(start, end int) ([]*data.User, int64, error) {
 	var users []*data.User
+	var totalCount int64
 
-	err := r.db.Limit(end - start).Offset(start).Find(&users).Error
+	err := r.db.Model(&data.User{}).Count(&totalCount).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return users, nil
+	err = r.db.Limit(end - start).Offset(start).Find(&users).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return users, totalCount, nil
 }
 
 func (r *Repository) GetById(id string) (*data.User, error) {

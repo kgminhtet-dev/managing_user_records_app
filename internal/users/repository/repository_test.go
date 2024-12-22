@@ -3,22 +3,24 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/testutil"
 	"github.com/mattn/go-sqlite3"
-	"os"
-	"testing"
 )
 
 var (
-	repo  *Repository
-	users []*data.User
+	repo               *Repository
+	users              []*data.User
+	totalCountsOfUsers = 20
 )
 
 func TestMain(m *testing.M) {
 	db := testutil.Setup()
-	users = testutil.GenerateRandomUsers(10)
+	users = testutil.GenerateRandomUsers(totalCountsOfUsers)
 	testutil.SeedDatabase(db, users)
 	repo = New(db)
 
@@ -92,9 +94,13 @@ func TestFindUserByEmail(t *testing.T) {
 
 func TestGetUsers(t *testing.T) {
 	start, end := 1, 10
-	fetchedusers, err := repo.GetAll(start, end)
+	fetchedusers, totalCount, err := repo.GetAll(start, end)
 	if err != nil {
 		t.Fatalf("Error found in getting user %v", err)
+	}
+
+	if totalCount != int64(totalCountsOfUsers) {
+		t.Errorf("Expected count %d, but got %d", totalCountsOfUsers, totalCount)
 	}
 
 	if len(fetchedusers) != (end - start) {
