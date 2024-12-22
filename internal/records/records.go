@@ -2,6 +2,7 @@ package records
 
 import (
 	"context"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/handler"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-func Run(e *echo.Echo) {
+func Run(q *mqueue.Mqueue, e *echo.Echo) {
 	cfg := config.LoadConfig(os.Getenv("RECORD_CONFIG_PATH"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -23,4 +24,5 @@ func Run(e *echo.Echo) {
 	service := usecase.NewService(repo)
 	h := handler.New(service)
 	handler.RegisterRoutes(e.Group("api/v1"), h)
+	handler.RegisterSubscribers(q, h)
 }

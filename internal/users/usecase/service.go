@@ -7,7 +7,6 @@ import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"log"
 )
 
 type Service struct {
@@ -45,8 +44,6 @@ func (s *Service) GetUsers(page, limit int) ([]*data.User, error) {
 	}
 	start := (page - 1) * limit
 	end := start + limit
-
-	log.Println("start: ", start, "end: ", end)
 
 	users, err := s.repository.GetAll(start, end)
 	if err != nil {

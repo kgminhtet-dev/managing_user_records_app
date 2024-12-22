@@ -2,8 +2,54 @@ package handler
 
 import (
 	"github.com/google/uuid"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
+	"github.com/labstack/echo/v4"
+	"net/http"
 	"regexp"
 )
+
+func handleUserHandlerError(c echo.Context, err error) error {
+	switch err {
+	case usecase.ErrEmailAlreadyExist:
+		return c.JSON(
+			http.StatusConflict,
+			map[string]string{
+				"error":   "Conflict",
+				"details": "Email already exists",
+			},
+		)
+	case usecase.ErrUserNotFound:
+		return c.JSON(http.StatusNotFound,
+			map[string]string{
+				"error":   "Not Found",
+				"details": "User not found",
+			})
+	case usecase.ErrInternal:
+		return c.JSON(
+			http.StatusInternalServerError,
+			map[string]string{
+				"error":   "Internal Server Error",
+				"details": "Something went wrong",
+			},
+		)
+	default:
+		return c.JSON(
+			http.StatusInternalServerError,
+			map[string]string{
+				"error":   "Unknown Error",
+				"details": "An unexpected error occurred",
+			},
+		)
+	}
+}
+
+func newPayload(userId string, data any) *mqueue.Payload {
+	return &mqueue.Payload{
+		UserID: userId,
+		Data:   data,
+	}
+}
 
 func isUUID(id string) bool {
 	_, err := uuid.Parse(id)

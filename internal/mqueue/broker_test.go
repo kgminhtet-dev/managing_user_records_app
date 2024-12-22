@@ -1,6 +1,7 @@
 package mqueue
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"sync"
@@ -13,9 +14,8 @@ type TestEnvironment struct {
 
 func TestReceiveMessage(t *testing.T) {
 	var wg sync.WaitGroup
-
 	broker := newBroker(&wg)
-	var sub Subscriber = func(payload any) error {
+	var sub Subscriber = func(ctx context.Context, msg any) error {
 		return nil
 	}
 	broker.receive("UserCreated", sub)
@@ -33,8 +33,9 @@ func TestDeliveredMessage(t *testing.T) {
 
 	var wg sync.WaitGroup
 	broker := newBroker(&wg)
-	var sub1 Subscriber = func(payload any) error {
-		_, err := testEnv.writer.Write([]byte("Subscriber 1: " + payload.(string)))
+	var sub1 Subscriber = func(ctx context.Context, msg any) error {
+		message := msg.(*Message)
+		_, err := testEnv.writer.Write([]byte("Subscriber 1: " + message.Payload.(string)))
 		return err
 	}
 	broker.receive("UserCreated", sub1)

@@ -1,6 +1,8 @@
 package mqueue
 
-import "sync"
+import (
+	"sync"
+)
 
 type Mqueue struct {
 	broker *broker

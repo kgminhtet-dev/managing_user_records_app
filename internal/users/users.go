@@ -2,6 +2,7 @@ package users
 
 import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/handler"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
@@ -33,11 +34,11 @@ func readConfig() *config.Config {
 	return cfg
 }
 
-func Run(e *echo.Echo) {
+func Run(q *mqueue.Mqueue, e *echo.Echo) {
 	cfg := readConfig()
 	db := data.New(cfg.Database)
 	repo := repository.New(db)
 	service := usecase.NewService(repo)
-	h := handler.New(service)
+	h := handler.New(q, service)
 	routes(e.Group("api/v1"), h)
 }

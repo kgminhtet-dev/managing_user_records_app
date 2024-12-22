@@ -10,7 +10,7 @@ GOLINT := golangci-lint
 # Targets
 .PHONY: all fmt lint test build run clean
 
-all: fmt build run clean
+all: fmt lint build run clean
 
 build:
 	@echo "Building the application..."

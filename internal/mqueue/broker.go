@@ -1,11 +1,13 @@
 package mqueue
 
 import (
+	"context"
 	"log"
 	"sync"
+	"time"
 )
 
-type Subscriber func(payload any) error
+type Subscriber func(ctx context.Context, msg any) error
 type Subscribers []Subscriber
 
 type broker struct {
@@ -15,27 +17,29 @@ type broker struct {
 }
 
 func (b *broker) receive(event string, s Subscriber) {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
-	if _, ok := b.messages[event]; ok {
-		b.messages[event] = append(b.messages[event], s)
-	} else {
-		b.messages[event] = Subscribers{s}
-	}
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.messages[event] = append(b.messages[event], s)
 }
 
 func (b *broker) deliver(event string, payload any) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
+
+	message := NewMessage(event, payload)
 	if fns, ok := b.messages[event]; ok {
 		for _, fn := range fns {
 			b.wg.Add(1)
-			go (func() {
-				defer b.wg.Done()
-				if err := fn(payload); err != nil {
-					log.Printf("event: %s, error: %v", event, err)
+			go (func(fn Subscriber) {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer func() {
+					cancel()
+					b.wg.Done()
+				}()
+				if err := fn(ctx, message); err != nil {
+					log.Printf("[mqueue] event: %s, error: %v", event, err)
 				}
-			})()
+			})(fn)
 		}
 	}
 }

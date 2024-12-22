@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/event"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
@@ -10,6 +12,7 @@ import (
 
 type Handler struct {
 	service *usecase.Service
+	mq      *mqueue.Mqueue
 }
 
 func (h *Handler) GetUsers(c echo.Context) error {
@@ -25,25 +28,21 @@ func (h *Handler) GetUsers(c echo.Context) error {
 	}
 
 	limit := 10
-	user, err := h.service.GetUsers(int(page), limit)
-	switch err {
-	case usecase.ErrInternal:
-		return c.JSON(
-			http.StatusInternalServerError,
-			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
-			},
-		)
-	default:
-		return c.JSON(
-			http.StatusOK,
-			map[string]any{
-				"data":   user,
-				"paging": map[string]int64{"previous": page, "next": page + 2},
-			},
-		)
+	users, err := h.service.GetUsers(int(page), limit)
+	if err != nil {
+		return handleUserHandlerError(c, err)
 	}
+
+	sessionUserId := "1"
+	go h.mq.Publish(
+		event.UsersFetched,
+		newPayload(sessionUserId, map[string]int64{"page": page}),
+	)
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"data":   users,
+		"paging": map[string]int64{"previous": page, "next": page + 2},
+	})
 }
 
 func (h *Handler) GetUser(c echo.Context) error {
@@ -53,24 +52,15 @@ func (h *Handler) GetUser(c echo.Context) error {
 	}
 
 	user, err := h.service.GetUserById(id)
-	switch err {
-	case usecase.ErrInternal:
-		return c.JSON(
-			http.StatusInternalServerError,
-			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
-			},
-		)
-	case usecase.ErrUserNotFound:
-		return c.JSON(
-			http.StatusNotFound,
-			map[string]string{
-				"error":   "Not Found",
-				"details": "User not found",
-			},
-		)
+	if err != nil {
+		return handleUserHandlerError(c, err)
 	}
+
+	sessionUserId := "1"
+	go h.mq.Publish(
+		event.UserFetched,
+		newPayload(sessionUserId, map[string]string{"id": id}),
+	)
 
 	return c.JSON(
 		http.StatusOK,
@@ -107,24 +97,21 @@ func (h *Handler) CreateUser(c echo.Context) error {
 	user.Password = input.Password
 
 	err := h.service.CreateUser(&user)
-	switch err {
-	case usecase.ErrEmailAlreadyExist:
-		return c.JSON(
-			http.StatusConflict,
-			map[string]string{
-				"error":   "Conflict",
-				"details": "Email already exists",
-			},
-		)
-	case usecase.ErrInternal:
-		return c.JSON(
-			http.StatusInternalServerError,
-			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
-			},
-		)
+	if err != nil {
+		return handleUserHandlerError(c, err)
 	}
+
+	sessionUserId := "1"
+	go h.mq.Publish(
+		event.UserCreated,
+		newPayload(
+			sessionUserId,
+			map[string]string{
+				"id":    user.ID,
+				"name":  user.Name,
+				"email": user.Email,
+			}),
+	)
 
 	return c.JSON(http.StatusCreated, nil)
 }
@@ -133,10 +120,10 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	var user data.User
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(
-			http.StatusInternalServerError,
+			http.StatusBadRequest,
 			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
+				"error":   "Bad Request",
+				"details": "Invalid data",
 			},
 		)
 	}
@@ -151,23 +138,21 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	}
 
 	err := h.service.UpdateUser(user.ID, &user)
-	switch err {
-	case usecase.ErrUserNotFound:
-		return c.JSON(
-			http.StatusNotFound,
-			map[string]string{
-				"error":   "Not Found",
-				"details": "User not found",
-			})
-	case usecase.ErrInternal:
-		return c.JSON(
-			http.StatusInternalServerError,
-			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
-			},
-		)
+	if err != nil {
+		return handleUserHandlerError(c, err)
 	}
+
+	sessionUserId := "1"
+	go h.mq.Publish(
+		event.UserUpdated,
+		newPayload(
+			sessionUserId,
+			map[string]string{
+				"id":    user.ID,
+				"name":  user.Name,
+				"email": user.Email,
+			}),
+	)
 
 	return c.JSON(http.StatusOK, nil)
 }
@@ -180,20 +165,19 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 	}
 
 	err := h.service.DeleteUser(id)
-	switch err {
-	case usecase.ErrInternal:
-		return c.JSON(
-			http.StatusInternalServerError,
-			map[string]string{
-				"error":   "Internal Server Error",
-				"details": "Something go wrong",
-			},
-		)
+	if err != nil {
+		return handleUserHandlerError(c, err)
 	}
+
+	sessionUserId := "1"
+	go h.mq.Publish(
+		event.UserDeleted,
+		newPayload(sessionUserId, map[string]string{"id": id}),
+	)
 
 	return c.JSON(http.StatusOK, nil)
 }
 
-func New(service *usecase.Service) *Handler {
-	return &Handler{service: service}
+func New(mq *mqueue.Mqueue, service *usecase.Service) *Handler {
+	return &Handler{mq: mq, service: service}
 }

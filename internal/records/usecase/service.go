@@ -3,8 +3,10 @@ package usecase
 import (
 	"context"
 	"errors"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/repository"
+	"log"
 )
 
 var (
@@ -16,25 +18,15 @@ var (
 	ErrBadRequest     = errors.New("bad request")
 )
 
-type Message struct {
-	Event   string
-	Payload any
-}
-
 type Service struct {
 	repository *repository.Repository
 }
 
-func (s *Service) CreateRecord(ctx context.Context, msg *Message) error {
-	payload, ok := msg.Payload.(*Payload)
-
-	if !ok || !payload.Validate() {
-		return ErrInvalidPayload
-	}
-
-	record := NewRecord(msg.Event, payload)
+func (s *Service) CreateRecord(ctx context.Context, event string, payload *mqueue.Payload) error {
+	record := NewRecord(event, payload)
 	err := s.repository.Create(ctx, record)
 	if err != nil {
+		log.Println(err)
 		return ErrDatabaseError
 	}
 

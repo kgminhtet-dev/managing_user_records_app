@@ -54,8 +54,8 @@ func NewEnvironment() (*mongo.Database, *mongo.Collection) {
 	return database, database.Collection(collection)
 }
 
-func Clear(database *mongo.Database) {
-	if err := database.Collection(collection).Drop(nil); err != nil {
+func Clear(ctx context.Context, database *mongo.Database) {
+	if err := database.Collection(collection).Drop(ctx); err != nil {
 		panic(err)
 	}
 }

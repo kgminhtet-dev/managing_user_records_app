@@ -26,8 +26,8 @@ func TestMain(m *testing.M) {
 	exitCode := m.Run()
 
 	(func() {
-		testutil.Clear(database)
-		data.DisconnectDatabase(nil, database)
+		testutil.Clear(context.TODO(), database)
+		data.DisconnectDatabase(context.TODO(), database)
 	})()
 
 	os.Exit(exitCode)

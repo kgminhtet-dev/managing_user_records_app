@@ -11,10 +11,6 @@ func BadRequestResponse(message string) *ErrorResp {
 	}
 }
 
-type UserResp struct {
-	data data.User
-}
-
 type PagingResp struct {
 	Previous int `json:"previous"`
 	Next     int `json:"next"`
