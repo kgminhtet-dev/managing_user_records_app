@@ -2,15 +2,14 @@ package auth
 
 import (
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users"
-	userHandler "github.com/kgminhtet-dev/managing_user_records_app/internal/users/handler"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
-func registerRoutes(g *echo.Group, userService *usecase.Service) {
-	g.POST("/auth/login", func(c echo.Context) error {
+func registerRoutes(e *echo.Echo, userService *usecase.Service) {
+	e.POST("/auth/login", func(c echo.Context) error {
 		var credentials LoginRequest
 		if err := c.Bind(&credentials); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{
@@ -19,7 +18,7 @@ func registerRoutes(g *echo.Group, userService *usecase.Service) {
 			})
 		}
 
-		if !userHandler.IsEmail(credentials.Email) || !userHandler.IsPassword(credentials.Password) {
+		if !isEmail(credentials.Email) || !isPassword(credentials.Password) {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"error":   "Bad Request",
 				"details": "Invalid credentials",
@@ -34,12 +33,22 @@ func registerRoutes(g *echo.Group, userService *usecase.Service) {
 			})
 		}
 
-		return c.JSON(http.StatusOK, nil)
+		token, err := generateToken(user.ID, user.Name)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error":   "Internal Server Error",
+				"details": "Something go wrong",
+			})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{
+			"user_id": user.ID,
+			"_token":  token,
+		})
 	})
 }
 
 func Run(e *echo.Echo) {
-	api := e.Group("/api/v1")
 	userService := users.NewService()
-	registerRoutes(api, userService)
+	registerRoutes(e, userService)
 }

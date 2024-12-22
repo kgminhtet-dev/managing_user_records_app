@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/common"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/event"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
@@ -9,6 +11,11 @@ import (
 	"net/http"
 	"strconv"
 )
+
+type UserClaims struct {
+	Email string `json:"email"`
+	jwt.RegisteredClaims
+}
 
 type Handler struct {
 	service *usecase.Service
@@ -30,13 +37,13 @@ func (h *Handler) GetUsers(c echo.Context) error {
 	limit := 10
 	users, err := h.service.GetUsers(int(page), limit)
 	if err != nil {
-		return HandleUserHandlerError(c, err)
+		return handleUserHandlerError(c, err)
 	}
 
-	sessionUserId := "1"
+	claim := c.Get("user").(*jwt.Token).Claims.(*common.UserClaims)
 	go h.mq.Publish(
 		event.UsersFetched,
-		NewPayload(sessionUserId, map[string]int64{"page": page}),
+		newPayload(claim.ID, map[string]int64{"page": page}),
 	)
 
 	return c.JSON(http.StatusOK, map[string]any{
@@ -47,19 +54,20 @@ func (h *Handler) GetUsers(c echo.Context) error {
 
 func (h *Handler) GetUser(c echo.Context) error {
 	id := c.Param("id")
-	if !IsUUID(id) {
+
+	if !isUUID(id) {
 		return c.JSON(http.StatusBadRequest, BadRequestResponse("Invalid user id"))
 	}
 
 	user, err := h.service.GetUserById(id)
 	if err != nil {
-		return HandleUserHandlerError(c, err)
+		return handleUserHandlerError(c, err)
 	}
 
-	sessionUserId := "1"
+	claim := c.Get("user").(*jwt.Token).Claims.(*common.UserClaims)
 	go h.mq.Publish(
 		event.UserFetched,
-		NewPayload(sessionUserId, map[string]string{"id": id}),
+		newPayload(claim.ID, map[string]string{"id": id}),
 	)
 
 	return c.JSON(
@@ -85,7 +93,7 @@ func (h *Handler) CreateUser(c echo.Context) error {
 		)
 	}
 
-	if input.Name == "" || !IsEmail(input.Email) || !IsPassword(input.Password) {
+	if input.Name == "" || !isEmail(input.Email) || !isPassword(input.Password) {
 		return c.JSON(
 			http.StatusBadRequest,
 			BadRequestResponse("Invalid user data"))
@@ -98,14 +106,14 @@ func (h *Handler) CreateUser(c echo.Context) error {
 
 	err := h.service.CreateUser(&user)
 	if err != nil {
-		return HandleUserHandlerError(c, err)
+		return handleUserHandlerError(c, err)
 	}
 
-	sessionUserId := "1"
+	claim := c.Get("user").(*jwt.Token).Claims.(*common.UserClaims)
 	go h.mq.Publish(
 		event.UserCreated,
-		NewPayload(
-			sessionUserId,
+		newPayload(
+			claim.ID,
 			map[string]string{
 				"id":    user.ID,
 				"name":  user.Name,
@@ -131,7 +139,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	id := c.Param("id")
 	user.ID = id
 
-	if user.Name == "" || !IsUUID(user.ID) || !IsEmail(user.Email) {
+	if user.Name == "" || !isUUID(user.ID) || !isEmail(user.Email) {
 		return c.JSON(
 			http.StatusBadRequest,
 			BadRequestResponse("Invalid user data"))
@@ -139,14 +147,14 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 	err := h.service.UpdateUser(user.ID, &user)
 	if err != nil {
-		return HandleUserHandlerError(c, err)
+		return handleUserHandlerError(c, err)
 	}
 
-	sessionUserId := "1"
+	claim := c.Get("user").(*jwt.Token).Claims.(*common.UserClaims)
 	go h.mq.Publish(
 		event.UserUpdated,
-		NewPayload(
-			sessionUserId,
+		newPayload(
+			claim.ID,
 			map[string]string{
 				"id":    user.ID,
 				"name":  user.Name,
@@ -160,19 +168,19 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 func (h *Handler) DeleteUser(c echo.Context) error {
 	id := c.Param("id")
 
-	if !IsUUID(id) {
+	if !isUUID(id) {
 		return c.JSON(http.StatusBadRequest, BadRequestResponse("Invalid user id"))
 	}
 
 	err := h.service.DeleteUser(id)
 	if err != nil {
-		return HandleUserHandlerError(c, err)
+		return handleUserHandlerError(c, err)
 	}
 
-	sessionUserId := "1"
+	claim := c.Get("user").(*jwt.Token).Claims.(*common.UserClaims)
 	go h.mq.Publish(
 		event.UserDeleted,
-		NewPayload(sessionUserId, map[string]string{"id": id}),
+		newPayload(claim.ID, map[string]string{"id": id}),
 	)
 
 	return c.JSON(http.StatusOK, nil)

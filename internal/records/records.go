@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func Run(q *mqueue.Mqueue, e *echo.Echo) {
+func Run(q *mqueue.Mqueue, r *echo.Group) {
 	cfg := config.LoadConfig(os.Getenv("RECORD_CONFIG_PATH"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -23,6 +23,6 @@ func Run(q *mqueue.Mqueue, e *echo.Echo) {
 	repo := repository.New(collection)
 	service := usecase.NewService(repo)
 	h := handler.New(service)
-	handler.RegisterRoutes(e.Group("api/v1"), h)
+	handler.RegisterRoutes(r, h)
 	handler.RegisterSubscribers(q, h)
 }

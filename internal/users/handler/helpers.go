@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-func HandleUserHandlerError(c echo.Context, err error) error {
+func handleUserHandlerError(c echo.Context, err error) error {
 	switch err {
 	case usecase.ErrEmailAlreadyExist:
 		return c.JSON(
@@ -44,23 +44,23 @@ func HandleUserHandlerError(c echo.Context, err error) error {
 	}
 }
 
-func NewPayload(userId string, data any) *mqueue.Payload {
+func newPayload(userId string, data any) *mqueue.Payload {
 	return &mqueue.Payload{
 		UserID: userId,
 		Data:   data,
 	}
 }
 
-func IsUUID(id string) bool {
+func isUUID(id string) bool {
 	_, err := uuid.Parse(id)
 	return err == nil
 }
 
-func IsPassword(password string) bool {
+func isPassword(password string) bool {
 	return len(password) >= 8
 }
 
-func IsEmail(email string) bool {
+func isEmail(email string) bool {
 	var emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	re := regexp.MustCompile(emailRegex)
 	return re.MatchString(email)

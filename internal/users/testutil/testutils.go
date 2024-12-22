@@ -3,7 +3,7 @@ package testutil
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"gorm.io/gorm"
 	"log"

@@ -1,8 +1,8 @@
 package users
 
 import (
-	"github.com/kgminhtet-dev/managing_user_records_app/internal/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
+	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/config"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/data"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/handler"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/repository"
@@ -16,7 +16,7 @@ var (
 	service *usecase.Service
 )
 
-func routes(router *echo.Group, handlers *handler.Handler) {
+func registerRoutes(router *echo.Group, handlers *handler.Handler) {
 	router.GET("/users", handlers.GetUsers)
 	router.GET("/users/:id", handlers.GetUser)
 	router.POST("/users", handlers.CreateUser)
@@ -50,7 +50,7 @@ func NewService() *usecase.Service {
 	return service
 }
 
-func Run(q *mqueue.Mqueue, e *echo.Echo) {
+func Run(q *mqueue.Mqueue, r *echo.Group) {
 	h := handler.New(q, NewService())
-	routes(e.Group("api/v1"), h)
+	registerRoutes(r, h)
 }
