@@ -49,7 +49,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		e.Logger.Fatal(e.Start(os.Getenv("HOST") + ":" + os.Getenv("PORT")))
+		e.Logger.Fatal(e.Start(common.GetURI()))
 	}()
 
 	quit := make(chan os.Signal, 1)

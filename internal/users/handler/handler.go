@@ -41,10 +41,11 @@ func (h *Handler) GetUsers(c echo.Context) error {
 		newPayload(claim.ID, map[string]int64{"page": page}),
 	)
 
+	uri := common.GetURI()
 	return c.JSON(http.StatusOK, map[string]any{
 		"data":   users,
 		"total":  totalUser,
-		"paging": map[string]int64{"previous": page, "next": page + 2},
+		"_links": common.GenerateLinks(uri, "users", claim.ID, page+1),
 	})
 }
 
@@ -66,10 +67,12 @@ func (h *Handler) GetUser(c echo.Context) error {
 		newPayload(claim.ID, map[string]string{"id": id}),
 	)
 
+	uri := common.GetURI()
 	return c.JSON(
 		http.StatusOK,
 		map[string]any{
-			"data": user,
+			"data":   user,
+			"_links": common.GenerateLinks(uri, "users", user.ID, 0),
 		})
 }
 
