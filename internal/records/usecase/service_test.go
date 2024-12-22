@@ -86,7 +86,7 @@ func TestService_CreateRecord(t *testing.T) {
 			err := service.CreateRecord(ctx, tc.event, tc.payload)
 			assert.NoError(t, err)
 
-			var record data.UserRecord
+			var record data.Record
 			err = collection.FindOne(ctx, bson.M{"user_id": tc.payload.UserID}).Decode(&record)
 
 			assert.NoError(t, err)

@@ -15,7 +15,7 @@ type Repository struct {
 	collection *mongo.Collection
 }
 
-func (r *Repository) Create(ctx context.Context, record *data.UserRecord) error {
+func (r *Repository) Create(ctx context.Context, record *data.Record) error {
 	_, err := r.collection.InsertOne(ctx, record)
 	if err != nil {
 		return fmt.Errorf("failed to insert record: %w", err)
@@ -23,8 +23,8 @@ func (r *Repository) Create(ctx context.Context, record *data.UserRecord) error 
 	return nil
 }
 
-func (r *Repository) GetById(ctx context.Context, id primitive.ObjectID) (*data.UserRecord, error) {
-	var record data.UserRecord
+func (r *Repository) GetById(ctx context.Context, id primitive.ObjectID) (*data.Record, error) {
+	var record data.Record
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&record)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -35,7 +35,7 @@ func (r *Repository) GetById(ctx context.Context, id primitive.ObjectID) (*data.
 	return &record, nil
 }
 
-func (r *Repository) GetAll(ctx context.Context, start, limit int) ([]*data.UserRecord, error) {
+func (r *Repository) GetAll(ctx context.Context, start, limit int) ([]*data.Record, error) {
 	filter := bson.M{}
 	opts := options.Find().
 		SetSkip(int64(start)).
@@ -48,13 +48,13 @@ func (r *Repository) GetAll(ctx context.Context, start, limit int) ([]*data.User
 	}
 	defer cursor.Close(ctx)
 
-	var records []*data.UserRecord
+	var records []*data.Record
 	if err := cursor.All(ctx, &records); err != nil {
 		return nil, fmt.Errorf("failed to decode records: %w", err)
 	}
 
 	if len(records) == 0 {
-		return []*data.UserRecord{}, nil
+		return []*data.Record{}, nil
 	}
 
 	return records, nil

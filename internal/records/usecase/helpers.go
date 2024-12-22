@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func NewRecord(event string, payload *mqueue.Payload) *data.UserRecord {
-	return &data.UserRecord{
+func NewRecord(event string, payload *mqueue.Payload) *data.Record {
+	return &data.Record{
 		UserID:    payload.UserID,
 		Event:     event,
 		Data:      payload.Data,

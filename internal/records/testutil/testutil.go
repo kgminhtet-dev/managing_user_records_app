@@ -25,7 +25,7 @@ func GenerateRandomRecords(size int) []any {
 	records := make([]any, size)
 
 	for i := range records {
-		record := &data.UserRecord{}
+		record := &data.Record{}
 		record.ID = primitive.NewObjectID()
 		record.UserID = uuid.New().String()
 		record.Event = events[i%len(events)]

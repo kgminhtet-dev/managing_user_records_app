@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type UserRecord struct {
+type Record struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	UserID    string             `json:"user_id" bson:"user_id"`
 	Event     string             `json:"event" bson:"event"`

@@ -36,12 +36,12 @@ func TestMain(m *testing.M) {
 func TestCreate(t *testing.T) {
 	testcases := []struct {
 		name        string
-		record      *data.UserRecord
+		record      *data.Record
 		expectedErr error
 	}{
 		{
 			name: "Create a new record",
-			record: &data.UserRecord{
+			record: &data.Record{
 				ID:        primitive.ObjectID{},
 				UserID:    uuid.New().String(),
 				Event:     "UserCreated",
@@ -58,7 +58,7 @@ func TestCreate(t *testing.T) {
 			assert.Equal(t, err, tc.expectedErr)
 
 			if err == nil {
-				var fetchedRecord data.UserRecord
+				var fetchedRecord data.Record
 				err = collection.FindOne(context.Background(), bson.M{"user_id": tc.record.UserID}).Decode(&fetchedRecord)
 
 				assert.NoError(t, err)
@@ -74,7 +74,7 @@ func TestGetById(t *testing.T) {
 	testutil.SeedDatabase(collection, records)
 
 	repo := repository.New(collection)
-	record := records[0].(*data.UserRecord)
+	record := records[0].(*data.Record)
 	fetchedRecord, err := repo.GetById(context.Background(), record.ID)
 
 	assert.NoError(t, err)

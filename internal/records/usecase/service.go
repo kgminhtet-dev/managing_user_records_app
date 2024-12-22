@@ -33,7 +33,7 @@ func (s *Service) CreateRecord(ctx context.Context, event string, payload *mqueu
 	return nil
 }
 
-func (s *Service) GetRecords(ctx context.Context, page int) ([]*data.UserRecord, error) {
+func (s *Service) GetRecords(ctx context.Context, page int) ([]*data.Record, error) {
 	if page <= 0 {
 		page = 1
 	}
