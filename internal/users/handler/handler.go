@@ -29,7 +29,7 @@ func (h *Handler) GetUsers(c echo.Context) error {
 			})
 	}
 
-	limit := 10
+	limit := 20
 	users, totalUser, err := h.service.GetUsers(int(page), limit)
 	if err != nil {
 		return handleUserHandlerError(c, err)
