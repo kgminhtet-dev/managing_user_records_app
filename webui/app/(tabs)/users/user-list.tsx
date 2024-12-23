@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default async function UserList({ users }: Props) {
-  users = [...users, ...users];
+  
   return (
     <Card className="w-full h-max flex flex-col overflow-auto">
       <div className="grid grid-cols-4 gap-2  py-2 px-3 font-semibold">
