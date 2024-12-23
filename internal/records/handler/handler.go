@@ -3,12 +3,13 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/event"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/mqueue"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/records/usecase"
 	"github.com/labstack/echo/v4"
-	"net/http"
-	"strconv"
 )
 
 type Handler struct {
@@ -52,7 +53,7 @@ func (h *Handler) GetRecords(c echo.Context) error {
 		})
 	}
 
-	records, err := h.service.GetRecords(c.Request().Context(), int(pageNo))
+	records, err := h.service.GetRecords(c.Request().Context(), int(pageNo), 50)
 
 	var response any
 	var statusCode int

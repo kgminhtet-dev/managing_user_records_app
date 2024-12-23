@@ -33,12 +33,11 @@ func (s *Service) CreateRecord(ctx context.Context, event string, payload *mqueu
 	return nil
 }
 
-func (s *Service) GetRecords(ctx context.Context, page int) ([]*data.Record, error) {
+func (s *Service) GetRecords(ctx context.Context, page int, limit int) ([]*data.Record, error) {
 	if page <= 0 {
 		page = 1
 	}
 
-	limit := 10
 	start := (page - 1) * limit
 	records, err := s.repository.GetAll(ctx, start, limit)
 	if err != nil {

@@ -18,3 +18,11 @@ export interface IUpdateUser {
   name: string;
   email: string;
 }
+
+export interface ILog {
+  id: string;
+  user_id: string;
+  event: string;
+  data: unknown;
+  timestamp: Date;
+}

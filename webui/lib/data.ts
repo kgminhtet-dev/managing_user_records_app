@@ -171,4 +171,34 @@ async function deleteUser(id: string) {
   }
 }
 
-export { getUsers, getUserById, createUser, updateUser, deleteUser, login };
+async function getLogs(page: string) {
+  const token = await getCookie("_token");
+  try {
+    const resp = await fetch(`${uri}/api/v1/records?page=${page}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token?.value}`,
+      },
+    });
+
+    if (!resp.ok) {
+      throw new Error(`HTTP error! status: ${resp.status}`);
+    }
+    const json = await resp.json();
+    return json.data;
+  } catch (err) {
+    console.error("Failed to fetch logs:", err);
+    throw err;
+  }
+}
+
+export {
+  getLogs,
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  login,
+};
