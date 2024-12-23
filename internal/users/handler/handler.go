@@ -130,7 +130,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 			http.StatusBadRequest,
 			map[string]string{
 				"error":   "Bad Request",
-				"details": "Invalid data",
+				"details": "Invalid user data data",
 			},
 		)
 	}
