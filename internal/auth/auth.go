@@ -1,11 +1,12 @@
 package auth
 
 import (
+	"net/http"
+
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users"
 	"github.com/kgminhtet-dev/managing_user_records_app/internal/users/usecase"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 func registerRoutes(e *echo.Echo, userService *usecase.Service) {

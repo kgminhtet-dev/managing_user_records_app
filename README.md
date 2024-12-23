@@ -151,6 +151,7 @@ Ensure the following are installed on your machine:
    ```
 
    The frontend will be available at `http://localhost:3000`.
+   To login, `http://localhost:3000/login`.
 
 ---
 
