@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { IUpdateUser } from "./types";
+import { ICreateUser, IUpdateUser } from "./types";
 import { revalidatePath } from "next/cache";
 
 const uri = process.env.URI;
@@ -87,9 +87,37 @@ async function getUserById(id: string) {
     const json = await resp.json();
     return json;
   } catch (err) {
-    console.error("Failed to fetch users:", err);
+    console.error("Failed to fetch user:", err);
     throw err;
   }
+}
+
+async function createUser(userData: ICreateUser) {
+  const token = await getCookie("_token");
+  try {
+    const resp = await fetch(`${uri}/api/v1/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token?.value}`,
+      },
+      body: JSON.stringify({
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+      }),
+    });
+
+    if (!resp.ok) {
+      const json = await resp.json();
+      return { ok: false, message: `${json.details}` };
+    }
+  } catch (err) {
+    console.error("Failed to create:", err);
+  }
+
+  revalidatePath("/users");
+  return { ok: true, message: "User created" };
 }
 
 async function updateUser(userData: IUpdateUser) {
@@ -110,12 +138,13 @@ async function updateUser(userData: IUpdateUser) {
 
     if (!resp.ok) {
       console.error(await resp.json());
-      return;
+      return false;
     }
 
     revalidatePath(`/users/${userData.id}`);
+    return true;
   } catch (err) {
-    console.error("Failed to login:", err);
+    console.error("Failed to update:", err);
     throw err;
   }
 }
@@ -137,9 +166,9 @@ async function deleteUser(id: string) {
 
     revalidatePath("/users");
   } catch (err) {
-    console.error("Failed to login:", err);
+    console.error("Failed to delete:", err);
     throw err;
   }
 }
 
-export { getUsers, getUserById, updateUser, deleteUser, login };
+export { getUsers, getUserById, createUser, updateUser, deleteUser, login };

@@ -1,5 +1,6 @@
 import UserList from "@/app/(tabs)/users/user-list";
 import { getUsers } from "@/lib/data";
+import CreateUserDialog from "./user-create";
 
 interface User {
   id: string;
@@ -14,6 +15,7 @@ export default async function UserPage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-1">
+      <CreateUserDialog />
       <UserList users={users} />
     </div>
   );
